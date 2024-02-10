@@ -1,0 +1,62 @@
+import json
+import pandas as pd
+
+# Load JSON data
+def load_data(file_path):
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return data
+
+# Convert data to DataFrame for easier manipulation
+def preprocess_data(data):
+    df = pd.DataFrame(data)
+    # Assuming columns are 'headline', 'location', 'time', 'summary'
+    # Convert 'time' to datetime format and extract city information
+    df['time'] = pd.to_datetime(df['time'])
+    # Here, you might need to extract city names from the 'location' field or another field that contains city information
+    # This is a placeholder function; you'll need to implement the extraction based on your data structure
+    df['city'] = df['location'].apply(extract_city_from_location)
+    return df
+
+def extract_city_from_location(location):
+    # Implement city extraction logic based on your data structure
+    # This could involve string manipulation or using a library like Geopy if locations are in a more complex format
+    return city
+def analyze_risk(df):
+    # Filter or score news items for risk-related content
+    # For simplicity, let's assume there's a function that assigns a risk score based on keywords in the 'headline' or 'summary'
+    df['risk_score'] = df.apply(lambda x: assess_risk(x['headline'], x['summary']), axis=1)
+    
+    # Aggregate risk information by city
+    city_risk_analysis = df.groupby('city')['risk_score'].agg(['count', 'mean']).reset_index()
+    city_risk_analysis.rename(columns={'count': 'event_count', 'mean': 'average_risk_score'}, inplace=True)
+    return city_risk_analysis
+
+def assess_risk(headline, summary):
+    # Implement risk assessment based on keywords or sentiment analysis
+    # This function should return a risk score
+    risk_score = 0
+    # Example: Increase risk_score based on certain keywords
+    risk_keywords = ['flood', 'earthquake', 'riot', 'pandemic']
+    for keyword in risk_keywords:
+        if keyword in headline.lower() or keyword in summary.lower():
+            risk_score += 1
+    return risk_score
+def generate_reports(city_risk_analysis, country):
+    filtered_analysis = city_risk_analysis[city_risk_analysis['country'] == country]
+    for index, row in filtered_analysis.iterrows():
+        print(f"City: {row['city']}")
+        print(f"Total Events: {row['event_count']}")
+        print(f"Average Risk Score: {row['average_risk_score']:.2f}")
+        print("----------\n")
+
+# Main function to tie everything together
+def main(file_path, country):
+    raw_data = load_data(file_path)
+    preprocessed_data = preprocess_data(raw_data)
+    risk_analysis = analyze_risk(preprocessed_data)
+    generate_reports(risk_analysis, country)
+
+# Uncomment the line below and replace 'your_file_path.json' with the path to your JSON file and 'YourCountry' with your specific country
+# main('your_file_path.json', 'YourCountry')
+
